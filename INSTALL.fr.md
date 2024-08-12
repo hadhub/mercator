@@ -35,13 +35,9 @@ Cloner le projet depuis Github
 
 ## Composer
 
-Mettre à jour composer
-
-    cd /var/www/mercator
-    composer self-update
-
 Installer les packages avec composer :
 
+    cd /var/www/mercator
     composer update
 
 Publier tous les actifs publiables à partir des packages des fournisseurs
@@ -186,7 +182,7 @@ ajouter cette ligne dans le crontab
 
 Si vous souhaitez connecter Mercator avec un Active Diretory ou un serveur LDAP,
 dans le fichier .env, mettez les paramètres de connexion en décommentant les lignes :
-    
+
     # Plusieurs types possibles : AD, OpenLDAP, FreeIPA, DirectoryServer
     LDAP_TYPE="AD"
     # If true, LDAP actions will be written to the application's default log file
@@ -207,6 +203,26 @@ dans le fichier .env, mettez les paramètres de connexion en décommentant les l
     LDAP_GROUPS="Delivering,Help Desk"
 
 Retrouvez une documentation plus complète sur la configuration de [LdapRecord](https://ldaprecord.com/docs/laravel/v2/configuration/#using-an-environment-file-env).
+
+## Configuration de Keycloak (optionel)
+
+Pour configurer Keycloak, suivez ces étapes :
+
+- Ouvrez votre fichier .env.
+- Décommentez et modifiez les paramètres de configuration de Keycloak comme suit :
+
+```
+KEYCLOAK = enable
+KEYCLOAK_CLIENT_ID= # Client Name (on Keycloak)
+KEYCLOAK_CLIENT_SECRET=  # Client Secret
+KEYCLOAK_REDIRECT_URI=<Mercator IP Address>/login/keycloak/callback
+KEYCLOAK_BASE_URL=<KeyCloak IP Address>
+KEYCLOAK_REALM=   # RealM Name
+```
+
+Après avoir défini KEYCLOAK sur enable, un bouton apparaîtra sur la page de connexion, permettant aux utilisateurs de se connecter via Keycloak.
+
+Pour une documentation plus complète sur la configuration de Keycloak, consultez la documentation officielle de Keycloak.
 
 ## Apache
 
@@ -245,6 +261,10 @@ Enfin, redémarrez le service Apache pour activer les modifications :
     sudo systemctl restart apache2
 
 ### HTTPS
+
+Activer le module SSL d'Apache
+
+    sudo a2enmod ssl
 
 Voici le fichier de configuration pour HTTPS
 
@@ -373,7 +393,7 @@ ou (Postgres):
     pg_dump --clean \
       -t users -t roles -t role_user \
       > backup_mercator_users.sql
-   
+
 Supprimer la base de données de Mercator
 
     sudo mysql -e "drop database mercator;"
@@ -381,7 +401,7 @@ Supprimer la base de données de Mercator
 ou (Postgres)
 
     dropdb mercator
-   
+
 Créer une nouvelle base de données
 
     sudo mysql -e "CREATE DATABASE mercator CHARACTER SET utf8 COLLATE utf8_general_ci;"

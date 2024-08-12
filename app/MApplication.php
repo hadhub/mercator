@@ -7,10 +7,8 @@ use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 
-/**
- * App\MApplication
- */
 class MApplication extends Model
 {
     use SoftDeletes, Auditable;
@@ -24,16 +22,21 @@ class MApplication extends Model
         'responsible',
         'editor',
         'functional_referent',
+        'attributes',
     ];
 
     protected $dates = [
         'created_at',
         'updated_at',
         'deleted_at',
+        'install_date',
+        'update_date',
+        'next_update',
     ];
 
     protected $fillable = [
         'name',
+        'application_block_id',
         'description',
         'vendor',
         'product',
@@ -51,23 +54,13 @@ class MApplication extends Model
         'security_need_a',
         'security_need_t',
         'external',
-        'application_block_id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
         'attributes',
         'patching_frequency',
+        'install_date',
         'update_date',
         'next_update',
     ];
 
-    /**
-     * Vérifie que l'utilisateur passé en paramètre est cartographe de cette application.
-     *
-     * @param User $user
-     *
-     * @return bool
-     */
     public function hasCartographer(User $user)
     {
         return $this->cartographers()
@@ -75,32 +68,34 @@ class MApplication extends Model
             ->exists();
     }
 
-    /**
-     * Permet d'exécuter de modifier un attribut avant que la valeurs soit récupérée du model
-     */
     public function getUpdateDateAttribute($value)
     {
-        return $value ? Carbon::parse($value)->format(config('panel.date_format')) : null;
+        return $this->formatDateForDisplay($value);
     }
 
     public function setUpdateDateAttribute($value)
     {
-        //dd($value);
-        $this->attributes['update_date'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
+        $this->attributes['update_date'] = $this->parseDate($value);
     }
 
-    /**
-     * Permet d'exécuter de modifier un attribut avant que la valeurs soit récupérée du model
-     */
+    public function getInstallDateAttribute($value)
+    {
+        return $this->formatDateForDisplay($value);
+    }
+
+    public function setInstallDateAttribute($value)
+    {
+        $this->attributes['install_date'] = $this->parseDate($value);
+    }
+
     public function getNextUpdateAttribute($value)
     {
-        return $value ? Carbon::parse($value)->format(config('panel.date_format')) : null;
+        return $this->formatDateForDisplay($value, config('panel.date_format'));
     }
 
     public function setNextUpdateAttribute($value)
     {
-        // dd($value);
-        $this->attributes['next_update'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
+        $this->attributes['next_update'] = $this->parseDate($value, config('panel.date_format'));
     }
 
     public function applicationSourceFluxes()
@@ -125,7 +120,7 @@ class MApplication extends Model
 
     public function processes()
     {
-        return $this->belongsToMany(Process::class)->orderBy('identifiant');
+        return $this->belongsToMany(Process::class)->orderBy('name');
     }
 
     public function services()
@@ -171,5 +166,29 @@ class MApplication extends Model
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d');
+    }
+
+    private function parseDate($value, $format = null)
+    {
+        $format = $format ? $format : config('panel.date_format') . ' ' . config('panel.time_format');
+
+        try {
+            return $value ? Carbon::createFromFormat($format, $value)->format('Y-m-d H:i:s') : null;
+        } catch (\Exception $e) {
+            Log::error('Invalid date format: ' . $value . ' with format ' . $format);
+            return null;
+        }
+    }
+
+    private function formatDateForDisplay($value, $format = null)
+    {
+        $format = $format ? $format : config('panel.date_format') . ' ' . config('panel.time_format');
+
+        try {
+            return $value ? Carbon::parse($value)->format($format) : null;
+        } catch (\Exception $e) {
+            Log::error('Error parsing date: ' . $value . ' with format ' . $format);
+            return null;
+        }
     }
 }

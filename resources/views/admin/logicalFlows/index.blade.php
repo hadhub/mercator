@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-@can('lan_create')
+@can('logical_flow_create')
     <div style="margin-bottom: 10px;" class="row">
         <div class="col-lg-12">
             <a class="btn btn-success" href="{{ route('admin.logical-flows.create') }}">
@@ -24,6 +24,15 @@
                         </th>
                         <th>
                             {{ trans('cruds.logicalFlow.fields.name') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.logicalFlow.fields.router') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.logicalFlow.fields.priority') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.logicalFlow.fields.action') }}
                         </th>
                         <th>
                             {{ trans('cruds.logicalFlow.fields.description') }}
@@ -58,6 +67,19 @@
                             <a href="{{ route('admin.logical-flows.show', $logicalFlow->id) }}">
                                 {{ $logicalFlow->name ?? "NONAME" }}
                             </a>
+                            </td>
+                            <td>
+                                @if ($logicalFlow->router_id !== null)
+                                <a href="{{ route('admin.routers.show', $logicalFlow->router_id) }}">
+                                    {{ $logicalFlow->router->name }}
+                                </a>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $logicalFlow->priority }}
+                            </td>
+                            <td>
+                                {{ $logicalFlow->action }}
                             </td>
                             <td>
                                 {!! $logicalFlow->description !!}

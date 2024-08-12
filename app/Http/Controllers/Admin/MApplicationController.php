@@ -57,7 +57,7 @@ class MApplicationController extends Controller
 
         $entities = Entity::all()->sortBy('name')->pluck('name', 'id');
         $entity_resps = Entity::all()->sortBy('name')->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
-        $processes = Process::all()->sortBy('identifiant')->pluck('identifiant', 'id');
+        $processes = Process::all()->sortBy('name')->pluck('name', 'id');
         $services = ApplicationService::all()->sortBy('name')->pluck('name', 'id');
         $databases = Database::all()->sortBy('name')->pluck('name', 'id');
         $logical_servers = LogicalServer::all()->sortBy('name')->pluck('name', 'id');
@@ -68,6 +68,23 @@ class MApplicationController extends Controller
         $users_list = MApplication::select('users')->where('users', '<>', null)->distinct()->orderBy('users')->pluck('users');
         $external_list = MApplication::select('external')->where('external', '<>', null)->distinct()->orderBy('external')->pluck('external');
 
+        // Get Attributes
+        $attributes_list = MApplication::select('attributes')
+            ->whereNotNull('attributes')
+            ->distinct()
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+        $attributes_list = array_unique($res);
+
+        // Get Reponsibles
         $responsible_list = MApplication::select('responsible')->where('responsible', '<>', null)->distinct()->orderBy('responsible')->pluck('responsible');
         $res = [];
         foreach ($responsible_list as $i) {
@@ -100,7 +117,8 @@ class MApplicationController extends Controller
                 'responsible_list',
                 'referent_list',
                 'editor_list',
-                'cartographers_list'
+                'cartographers_list',
+                'attributes_list'
             )
         );
     }
@@ -108,6 +126,7 @@ class MApplicationController extends Controller
     public function store(StoreMApplicationRequest $request)
     {
         $request->merge(['responsible' => implode(', ', $request->responsibles !== null ? $request->responsibles : [])]);
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         $application = MApplication::create($request->all());
 
@@ -138,7 +157,7 @@ class MApplicationController extends Controller
 
         $entities = Entity::all()->sortBy('name')->pluck('name', 'id');
         $entity_resps = Entity::all()->sortBy('name')->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
-        $processes = Process::all()->sortBy('identificant')->pluck('identifiant', 'id');
+        $processes = Process::all()->sortBy('name')->pluck('name', 'id');
         $services = ApplicationService::all()->sortBy('name')->pluck('name', 'id');
         $databases = Database::all()->sortBy('name')->pluck('name', 'id');
         $logical_servers = LogicalServer::all()->sortBy('name')->pluck('name', 'id');
@@ -158,6 +177,22 @@ class MApplicationController extends Controller
         $technology_list = MApplication::select('technology')->where('technology', '<>', null)->distinct()->orderBy('technology')->pluck('technology');
         $users_list = MApplication::select('users')->where('users', '<>', null)->distinct()->orderBy('users')->pluck('users');
         $external_list = MApplication::select('external')->where('external', '<>', null)->distinct()->orderBy('external')->pluck('external');
+
+        // Get Attributes
+        $attributes_list = MApplication::select('attributes')
+            ->whereNotNull('attributes')
+            ->distinct()
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+        $attributes_list = array_unique($res);
 
         $responsible_list = MApplication::select('responsible')->where('responsible', '<>', null)->distinct()->orderBy('responsible')->pluck('responsible');
         $res = [];
@@ -196,7 +231,8 @@ class MApplicationController extends Controller
                 'responsible_list',
                 'referent_list',
                 'editor_list',
-                'cartographers_list'
+                'cartographers_list',
+                'attributes_list'
             )
         );
     }
@@ -204,6 +240,7 @@ class MApplicationController extends Controller
     public function update(UpdateMApplicationRequest $request, MApplication $application)
     {
         $application->responsible = implode(', ', $request->responsibles !== null ? $request->responsibles : []);
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         // rto-rpo
         $application->rto = $request->rto_days * 60 * 24 + $request->rto_hours * 60 + $request->rto_minutes;

@@ -25,9 +25,14 @@ Route::get('/cytoscape1', function () {
 Route::get('/cytoscape2', function () {
     return view('cytoscape2');
 });
+Route::get('/cytoscape3', function () {
+    return view('cytoscape3');
+});
 
 Auth::routes();
 Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class,'logout']);
+Route::get('login/keycloak', [App\Http\Controllers\Auth\SsoController::class,'redirectToKeycloak'])->name('login.keycloak');
+Route::get('login/keycloak/callback', [App\Http\Controllers\Auth\SsoController::class,'handleKeycloakCallback']);
 
 // Admin
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], function () {
@@ -123,6 +128,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], 
     // Domaine Ads
     Route::resource('domaine-ads', Admin\DomaineAdController::class);
     Route::delete('domaine-ads-destroy', [Admin\DomaineAdController::class,'massDestroy'])->name('domaine-ads.massDestroy');
+
+    // Admin User
+    Route::resource('admin-users', Admin\AdminUserController::class);
+    Route::delete('admin-users-destroy', [Admin\AdminUserController::class,'massDestroy'])->name('admin-users.massDestroy');
 
     // Networks
     Route::resource('networks', Admin\NetworkController::class);

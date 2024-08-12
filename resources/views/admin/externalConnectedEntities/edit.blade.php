@@ -1,18 +1,15 @@
 @extends('layouts.admin')
 @section('content')
 
-<div class="card">
-    <div class="card-header">
-        {{ trans('global.edit') }} {{ trans('cruds.externalConnectedEntity.title_singular') }}
-    </div>
-
-    <div class="card-body">
-        <form method="POST" action="{{ route("admin.external-connected-entities.update", [$externalConnectedEntity->id]) }}" enctype="multipart/form-data">
-            @method('PUT')
-            @csrf
-
-
-          <div class="row">
+<form method="POST" action="{{ route("admin.external-connected-entities.update", [$externalConnectedEntity->id]) }}" enctype="multipart/form-data">
+    @method('PUT')
+    @csrf
+    <div class="card">
+        <div class="card-header">
+            {{ trans('global.edit') }} {{ trans('cruds.externalConnectedEntity.title_singular') }}
+        </div>
+        <div class="card-body">
+            <div class="row">
                 <div class="col-sm">
                     <div class="form-group">
                         <label class="required" for="name">{{ trans('cruds.externalConnectedEntity.fields.name') }}</label>
@@ -119,6 +116,33 @@
                 <div class="col-sm">
                     <div class="form-group">
                         <label for="contacts">{{ trans('cruds.externalConnectedEntity.fields.src') }}</label>
+                        <input class="form-control {{ $errors->has('src_desc') ? 'is-invalid' : '' }}" type="text" name="src_desc" id="src_desc" value="{{ old('src_desc', $externalConnectedEntity->src_desc) }}">
+                        @if($errors->has('src_desc'))
+                            <div class="invalid-feedback">
+                                {{ $errors->first('src_desc') }}
+                            </div>
+                        @endif
+                        <span class="help-block">{{ trans('cruds.externalConnectedEntity.fields.src_desc_helper') }}</span>
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <div class="form-group">
+                        <label for="contacts">{{ trans('cruds.externalConnectedEntity.fields.dest') }}</label>
+                        <input class="form-control {{ $errors->has('dest_desc') ? 'is-invalid' : '' }}" type="text" name="dest_desc" id="dest_desc" value="{{ old('dest_desc', $externalConnectedEntity->dest_desc) }}">
+                        @if($errors->has('dest'))
+                            <div class="invalid-feedback">
+                                {{ $errors->first('dest') }}
+                            </div>
+                        @endif
+                        <span class="help-block">{{ trans('cruds.externalConnectedEntity.fields.dest_desc_helper') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="form-group">
                         <input class="form-control {{ $errors->has('src') ? 'is-invalid' : '' }}" type="text" name="src" id="src" value="{{ old('src', $externalConnectedEntity->src) }}">
                         @if($errors->has('src'))
                             <div class="invalid-feedback">
@@ -131,8 +155,7 @@
 
                 <div class="col-sm">
                     <div class="form-group">
-                        <label for="contacts">{{ trans('cruds.externalConnectedEntity.fields.dest') }}</label>
-                        <input class="form-control {{ $errors->has('dest') ? 'is-invalid' : '' }}" type="text" name="dest" id="dest" value="{{ old('src', $externalConnectedEntity->dest) }}">
+                        <input class="form-control {{ $errors->has('dest') ? 'is-invalid' : '' }}" type="text" name="dest" id="dest" value="{{ old('dest', $externalConnectedEntity->dest) }}">
                         @if($errors->has('dest'))
                             <div class="invalid-feedback">
                                 {{ $errors->first('dest') }}
@@ -143,14 +166,16 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <button class="btn btn-danger" type="submit">
-                    {{ trans('global.save') }}
-                </button>
-            </div>
-        </form>
+
+        </div>
     </div>
-</div>
+    <div class="form-group">
+        <button class="btn btn-danger" type="submit">
+            {{ trans('global.save') }}
+        </button>
+    </div>
+</form>
+@endsection
 
 @section('scripts')
 <script>
@@ -173,8 +198,4 @@ $(document).ready(function () {
     });
 });
 </script>
-@endsection
-
-
-
 @endsection

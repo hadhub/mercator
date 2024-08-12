@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\LogicalFlow;
 use App\Router;
-// TODO : Why ????
 use App\Subnetwork;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Request;
 
 class ExplorerController extends Controller
 {
-    public function explore()
+    public function explore(Request $request)
     {
         $nodes = [];
         $edges = [];
@@ -74,6 +75,12 @@ class ExplorerController extends Controller
             }
         }
 
+        // network_switch_physical_switch
+        $joins = DB::table('network_switch_physical_switch')->select('network_switch_id', 'physical_switch_id')->get();
+        foreach ($joins as $join) {
+            $this->addLinkEdge($edges, $this->formatId('LSWITCH_', $join->network_switch_id), $this->formatId('SWITCH_', $join->physical_switch_id));
+        }
+
         // Physical routers
         $routers = DB::table('physical_routers')->select('id', 'name', 'bay_id', 'building_id', 'site_id')->whereNull('deleted_at')->get();
         foreach ($routers as $router) {
@@ -86,6 +93,7 @@ class ExplorerController extends Controller
                 $this->addLinkEdge($edges, $this->formatId('PROUTER_', $router->id), $this->formatId('SITE_', $router->site_id));
             }
         }
+
         // Physical security devices
         $securityDevices = DB::table('physical_security_devices')->select('id', 'name', 'bay_id', 'site_id', 'building_id')->whereNull('deleted_at')->get();
         foreach ($securityDevices as $securityDevice) {
@@ -288,6 +296,18 @@ class ExplorerController extends Controller
             }
         }
 
+        // physical_router_router
+        $joins = DB::table('physical_router_router')->select('router_id', 'physical_router_id')->get();
+        foreach ($joins as $join) {
+            $this->addLinkEdge($edges, $this->formatId('ROUTER_', $join->router_id), $this->formatId('PROUTER_', $join->physical_router_id));
+        }
+
+        // Logical Switches
+        $networkSwitches = DB::table('network_switches')->select('id', 'name')->whereNull('deleted_at')->get();
+        foreach ($networkSwitches as $networkSwitch) {
+            $this->addNode($nodes, 5, $this->formatId('LSWITCH_', $networkSwitch->id), $networkSwitch->name, '/images/switch.png', 'switches');
+        }
+
         // DHCP Servers
         $dhcp_servers = DB::table('dhcp_servers')->select('id', 'name', 'address_ip')->whereNull('deleted_at')->get();
         foreach ($dhcp_servers as $dhcp_server) {
@@ -327,7 +347,7 @@ class ExplorerController extends Controller
         }
 
         // Logical Servers
-        $logicalServers = DB::table('logical_servers')->select('id', 'name', 'address_ip', 'cluster_id')->get();
+        $logicalServers = DB::table('logical_servers')->select('id', 'name', 'address_ip', 'cluster_id', 'domain_id')->get();
         foreach ($logicalServers as $logicalServer) {
             $this->addNode($nodes, 5, $this->formatId('LSERVER_', $logicalServer->id), $logicalServer->name, '/images/lserver.png', 'logical-servers');
             if ($logicalServer->cluster_id !== null) {
@@ -343,6 +363,9 @@ class ExplorerController extends Controller
                     }
                 }
             }
+            if ($logicalServer->domain_id !== null) {
+                $this->addLinkEdge($edges, $this->formatId('LSERVER_', $logicalServer->id), $this->formatId('DOMAIN_', $logicalServer->domain_id));
+            }
         }
 
         // Logical Servers - Physical Servers
@@ -350,6 +373,55 @@ class ExplorerController extends Controller
         foreach ($joins as $join) {
             $this->addLinkEdge($edges, $this->formatId('PSERVER_', $join->physical_server_id), $this->formatId('LSERVER_', $join->logical_server_id));
         }
+
+        // Logical Flows
+        $flows = LogicalFlow::All();
+        foreach ($flows as $flow) {
+            // Get sources
+            $sources = [];
+            foreach ($logicalServers as $server) {
+                foreach (explode(',', $server->address_ip) as $ip) {
+                    if ($flow->isSource($ip)) {
+                        array_push($sources, $server->id);
+                    }
+                }
+            }
+            // Get destinations
+            $destinations = [];
+            foreach ($logicalServers as $server) {
+                foreach (explode(',', $server->address_ip) as $ip) {
+                    if ($flow->isDestination($ip)) {
+                        array_push($destinations, $server->id);
+                    }
+                }
+            }
+
+            // Add source <-> destination flows
+            foreach ($sources as $source) {
+                // if flow must be explored
+                if (($request->get('flow') !== null) && ($flow->id === (int) $request->get('flow'))) {
+                    // Add source node to request
+                    if ($request->get('node') === null) {
+                        $request['node'] = $this->formatId('LSERVER_', $source);
+                    } else {
+                        $request['node'] = $request->get('node').','.$this->formatId('LSERVER_', $source);
+                    }
+                }
+                foreach ($destinations as $destination) {
+                    $this->addFluxEdge($edges, $flow->name, false, $this->formatId('LSERVER_', $source), $this->formatId('LSERVER_', $destination));
+                    // if flow must be explored
+                    if (($request->get('flow') !== null) && ($flow->id === (int) $request->get('flow'))) {
+                        // Add destination node to request
+                        if ($request->get('node') === null) {
+                            $request['node'] = $this->formatId('LSERVER_', $destination);
+                        } else {
+                            $request['node'] = $request->get('node').','.$this->formatId('LSERVER_', $destination);
+                        }
+                    }
+                }
+            }
+        }
+
         // Certificates
         $certificates = DB::table('certificates')->select('id', 'name')->whereNull('deleted_at')->get();
         foreach ($certificates as $certificate) {
@@ -391,6 +463,14 @@ class ExplorerController extends Controller
         foreach ($joins as $join) {
             $this->addLinkEdge($edges, $this->formatId('FOREST_', $join->forest_ad_id), $this->formatId('DOMAIN_', $join->domaine_ad_id));
         }
+        // AdminUsers
+        $adminUsers = DB::table('admin_users')->select('id', 'user_id', 'domain_id')->whereNull('deleted_at')->get();
+        foreach ($adminUsers as $adminUser) {
+            $this->addNode($nodes, 4, $this->formatId('USER_', $adminUser->id), $adminUser->user_id, '/images/user.png', 'admin_users');
+            if ($adminUser->domain_id !== null) {
+                $this->addLinkEdge($edges, $this->formatId('USER_', $adminUser->id), $this->formatId('DOMAIN_', $adminUser->domain_id));
+            }
+        }
 
         // ---------------------------------------------------
         // Application view - 3
@@ -429,7 +509,7 @@ class ExplorerController extends Controller
         // Application Services
         $services = DB::table('application_services')->select('id', 'name')->whereNull('deleted_at')->get();
         foreach ($services as $service) {
-            $this->addNode($nodes, 3, $this->formatId('SERV_', $service->id), $service->name, '/images/service.png', 'application-services');
+            $this->addNode($nodes, 3, $this->formatId('SERV_', $service->id), $service->name, '/images/applicationservice.png', 'application-services');
         }
         // application_service_m_application
         $joins = DB::table('application_service_m_application')->select('m_application_id', 'application_service_id')->get();
@@ -513,9 +593,9 @@ class ExplorerController extends Controller
             $this->addLinkEdge($edges, $this->formatId('INFO_', $join->information_id), $this->formatId('DATABASE_', $join->database_id));
         }
         // process
-        $processes = DB::table('processes')->select('id', 'identifiant', 'macroprocess_id')->whereNull('deleted_at')->get();
+        $processes = DB::table('processes')->select('id', 'name', 'macroprocess_id')->whereNull('deleted_at')->get();
         foreach ($processes as $process) {
-            $this->addNode($nodes, 2, $this->formatId('PROCESS_', $process->id), $process->identifiant, '/images/process.png', 'processes');
+            $this->addNode($nodes, 2, $this->formatId('PROCESS_', $process->id), $process->name, '/images/process.png', 'processes');
             $this->addLinkEdge($edges, $this->formatId('PROCESS_', $process->id), $this->formatId('MACROPROCESS_', $process->macroprocess_id));
         }
         // information_process
@@ -526,7 +606,7 @@ class ExplorerController extends Controller
         // macro_processuses
         $macro_processuses = DB::table('macro_processuses')->select('id', 'name')->whereNull('deleted_at')->get();
         foreach ($macro_processuses as $macro_process) {
-            $this->addNode($nodes, 2, $this->formatId('MACROPROCESS_', $macro_process->id), $macro_process->name, '/images/macroprocess.png', 'macro_processuses');
+            $this->addNode($nodes, 2, $this->formatId('MACROPROCESS_', $macro_process->id), $macro_process->name, '/images/macroprocess.png', 'macro-processuses');
         }
 
         // Activities
@@ -579,9 +659,12 @@ class ExplorerController extends Controller
         // Ecosystem - 1
         // ---------------------------------------------------
         // Entities
-        $entities = DB::table('entities')->select('id', 'name')->whereNull('deleted_at')->get();
+        $entities = DB::table('entities')->select('id', 'name', 'parent_entity_id')->whereNull('deleted_at')->get();
         foreach ($entities as $entity) {
             $this->addNode($nodes, 1, $this->formatId('ENTITY_', $entity->id), $entity->name, '/images/entity.png', 'entities');
+            if ($entity->parent_entity_id !== null) {
+                $this->addFluxEdge($edges, null, false, $this->formatId('ENTITY_', $entity->id), $this->formatId('ENTITY_', $entity->parent_entity_id));
+            }
         }
 
         // Relations

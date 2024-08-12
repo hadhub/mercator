@@ -33,21 +33,20 @@ _Ecosystem view_
 
 _Information system business view_
 
-- /api/macro-processes
 - /api/macro-processuses
 - /api/processes
-- /api/operations
-- /api/actors
 - /api/activities
+- /api/operations
 - /api/tasks
+- /api/actors
 - /api/information
 
 _Application view_
 
 - /api/application-blocks
 - /api/applications
-- /api/application-modules
 - /api/application-services
+- /api/application-modules
 - /api/databases
 - /api/fluxes
 
@@ -57,6 +56,7 @@ _Administration view_
 - /api/annuaires
 - /api/forest-ads
 - /api/domaine-ads
+- /api/admin-users
 
 _Logical infrastructure view_
 
@@ -69,8 +69,11 @@ _Logical infrastructure view_
 - /api/security-devices
 - /api/dhcp-servers
 - /api/dnsservers
+- /api/clusters
 - /api/logical-servers
+- /api/logical-flows
 - /api/certificates
+- /api/vlans
 
 _Physical infrastructure view_
 
@@ -89,13 +92,8 @@ _Physical infrastructure view_
 - /api/wans
 - /api/mans
 - /api/lans
-- /api/vlans
-
-_Administration_
-
-- /api/users
-- /api/permissions
-- /api/roles
+- /api/links
+- /api/fluxes
 
 ### Actions managed by the resource controller
 
@@ -119,6 +117,36 @@ objects accessed via the API.
 
 When authentication is successful, the API sends an "access_token", which must be passed in the "Authorization" header.
 header of the API request.
+
+### Linking objects
+
+Mapping objects can refer to other objects. For example, we can link a process to an application. Suppose we have a ‘process’ that uses two applications, ‘app1’ and ‘app2’. To do this, we follow these steps:
+
+- Step 1: Ensure you have the application_id for the applications you want to link.
+
+```
+{
+  "id": 201,
+  "name": "app1",
+  "description": "desc1"
+}
+{
+  "id": 202,
+  "name": "app2",
+  "description": "desc2"
+}
+```
+
+- Step 2: Link the process to the applications. Either with an update or a store, we can add:
+```
+{
+  "id": 101,
+  "name": "process",
+  "applications[]": [201, 202]
+}
+```
+
+The names of all extra fields are: ['actors', 'tasks', 'activities', 'entities', 'applications', 'informations', 'processes', 'databases', 'logical_servers', 'modules', 'domainesForestAds', 'servers', 'vlans', 'lans', 'mans', 'wans', 'operations', 'domaine_ads', 'application_services', 'certificates', 'peripherals', 'physical_servers', 'physical_routers', 'network_switches', 'routers', 'physicalSwitches', 'physicalRouters']
 
 ### PHP
 

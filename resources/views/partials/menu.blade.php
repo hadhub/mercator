@@ -309,6 +309,16 @@
                                 </a>
                             </li>
                         @endcan
+                        @can('admin_user_access')
+                            <li class="nav-item">
+                                <a href="{{ route("admin.admin-users.index") }}" class="nav-link {{ request()->is('admin/admin-users*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-align-justify nav-icon">
+
+                                    </i>
+                                    {{ trans('cruds.adminUser.title') }}
+                                </a>
+                            </li>
+                        @endcan
                     </ul>
                 </li>
             @endcan
@@ -363,16 +373,6 @@
                             </li>
                         @endcan
                         @endif
-                        @can('network_switch_access')
-                            <li class="nav-item">
-                                <a href="{{ route("admin.network-switches.index") }}" class="nav-link {{ request()->is('admin/network-switches*') ? 'active' : '' }}">
-                                    <i class="fa-fw fas fa-align-justify nav-icon">
-
-                                    </i>
-                                    {{ trans('cruds.networkSwitch.title') }}
-                                </a>
-                            </li>
-                        @endcan
                         @can('router_access')
                             <li class="nav-item">
                                 <a href="{{ route("admin.routers.index") }}" class="nav-link {{ request()->is('admin/routers*') ? 'active' : '' }}">
@@ -380,6 +380,16 @@
 
                                     </i>
                                     {{ trans('cruds.router.title') }}
+                                </a>
+                            </li>
+                        @endcan
+                        @can('network_switch_access')
+                            <li class="nav-item">
+                                <a href="{{ route("admin.network-switches.index") }}" class="nav-link {{ request()->is('admin/network-switches*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-align-justify nav-icon">
+
+                                    </i>
+                                    {{ trans('cruds.networkSwitch.title') }}
                                 </a>
                             </li>
                         @endcan

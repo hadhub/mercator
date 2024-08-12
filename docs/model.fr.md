@@ -4,7 +4,7 @@
 
 ### Vue du RGPD
 
-La vue du RGPD contient l'ensemble des données nécessaires au maintient du registre des traitements et fait le lien avec les processus, applications et informations utilisées par le système d'information. 
+La vue du RGPD contient l'ensemble des données nécessaires au maintient du registre des traitements et fait le lien avec les processus, applications et informations utilisées par le système d'information.
 
 Cette vue permet de remplir les obligations prévues à l’article 30 du RGPD.
 
@@ -68,10 +68,14 @@ Table *entities* :
 |:---------------|:-------------|:-----------------|
 | id             | int unsigned | auto_increment |
 | name           | varchar(255) | Nom de l'entité |
+| entity_type       | varchar(255) | Type d'entité |
+| attributes        | varchar(255) | Attributs (#tag...) |
+| description    | longtext     | Description de l'entité |
+| reference         | varchar(255) | Numéro de référence de l'entité (facturation) |
+| parent_entity_id  | int unsigned | Entité parente |
 | is_external    | boolean      | Entité externe |
 | security_level | longtext     | Niveau de sécurité |
 | contact_point  | longtext     | Point de contact |
-| description    | longtext     | Description de l'entité |
 | created_at     | timestamp    | Date de création |
 | updated_at     | timestamp    | Date de mise à jour |
 | deleted_at     | timestamp    | Date de suppression |
@@ -89,18 +93,30 @@ Table *relations* :
 |:---------------|:-------------|:-----------------|
 | id             | int unsigned | auto_increment |
 | name           | varchar(255) | Nom de la relation |
-| description    | longtext     | Description de la relation |
 | type           | varchar(255) | Type de la relation |
-| importance     | int          | Importance de la relation |
+| description    | longtext     | Description de la relation |
 | source_id      | int unsigned | Référence vers l'entité source |
 | destination_id | int unsigned | Référence vers l'entité destinataire |
+| reference       | varchar(255) | Numéro de référence de la relation (facturation) |
+| responsible     | varchar(255) | Responsable de la relation |
+| order_number    | varchar(255) | Numéro de commande (facturation) |
+| active          | tinyint(1)   | La relation est encore active |
+| start_date      | date         | Début de la relation |
+| end_date        | date         | Fin de la relation |
+| comments        | text         | Commentaires sur l'état de la relation |
+| importance      | int          | Importance de la relation |
+| security_need_c | int          | Confidentialité |
+| security_need_i | int          | Intégrité |
+| security_need_a | int          | Disponibilité |
+| security_need_t | int          | Traçabilité |
 | created_at     | timestamp    | Date de création |
 | updated_at     | timestamp    | Date de mise à jour |
 | deleted_at     | timestamp    | Date de suppression |
 
+
 ### Vue métier du système d’information
 
-La vue métier du système d’information décrit l’ensemble des processus métiers de l’organisme avec les acteurs qui y participent, indépendamment des choix technologiques faits par l’organisme et des ressources mises à sa disposition. 
+La vue métier du système d’information décrit l’ensemble des processus métiers de l’organisme avec les acteurs qui y participent, indépendamment des choix technologiques faits par l’organisme et des ressources mises à sa disposition.
 
 [<img src="/mercator/images/information_system.png" width="600">](/mercator/images/information_system.png)
 
@@ -239,13 +255,13 @@ Table *information* :
 
 ### La vue des applications
 
-La vue des applications permet de décrire une partie de ce qui est classiquement appelé le « système informatique ». 
+La vue des applications permet de décrire une partie de ce qui est classiquement appelé le « système informatique ».
 
 [<img src="/mercator/images/applications.png" width="600">](/mercator/images/applications.png)
 
 Cette vue décrit les solutions technologiques qui supportent les processus métiers, principalement les applications.
 
-#### Bloc applicatif 
+#### Bloc applicatif
 
 Un bloc applicatif représente un ensemble d’application.
 
@@ -300,7 +316,7 @@ Table *m_applications* :
 
 #### Service applicatif
 
-Un service applicatif est un élément de découpage de l’application mis à disposition de l’utilisateur final dans le cadre de son travail. 
+Un service applicatif est un élément de découpage de l’application mis à disposition de l’utilisateur final dans le cadre de son travail.
 
 Un service applicatif peut, une API, ...
 
@@ -335,7 +351,7 @@ Table *application_modules* :
 
 #### Base de données
 
-Une base de données est un ensemble structuré et ordonné d’informations destinées à être exploitées informatiquement. 
+Une base de données est un ensemble structuré et ordonné d’informations destinées à être exploitées informatiquement.
 
 Table *databases* :
 
@@ -362,7 +378,7 @@ Un flux est un échange d’informations entre un émetteur ou un récepteur (ap
 
 Un flux représente un échange d’information entre deux éléments du système d’information. Il faut éviter de représenter en termes de flux l’ensemble des règles de filtrage du firewall.
 
-Par exemple, les requêtes DNS ou NTP ne devraient pas être représentées comme des flux. 
+Par exemple, les requêtes DNS ou NTP ne devraient pas être représentées comme des flux.
 
 Table *fluxes* :
 
@@ -391,7 +407,7 @@ La vue de l’administration répertorie l’administration des ressources, des 
 
 [<img src="/mercator/images/administration.png" width="400">](/mercator/images/administration.png)
 
-Disposer d’annuaires et d’une centralisation des droits d’accès des utilisateurs est fortement recommandé pour les opérateurs d’importance vitale (OIV). 
+Disposer d’annuaires et d’une centralisation des droits d’accès des utilisateurs est fortement recommandé pour les opérateurs d’importance vitale (OIV).
 
 #### Zone d’administration
 
@@ -447,7 +463,7 @@ Table *forest_ads* :
 
 ### L’infrastructure logiques
 
-La vue de l'infrastructure logique correspond à la répartition logique du réseau. 
+La vue de l'infrastructure logique correspond à la répartition logique du réseau.
 
 [<img src="/mercator/images/logical.png" width="400">](/mercator/images/logical.png)
 
@@ -569,11 +585,11 @@ Table *routers* :
 | updated_at           | timestamp    | Date de mise à jour |
 | deleted_at           | timestamp    | Date de suppression |
 
-#### Équipements de sécurité 
+#### Équipements de sécurité
 
 Les équipements de sécurité sont des composants permettant la supervision du réseau, la détection d’incidents, la protection des équipements ou ayant une fonction de sécurisation du système d’information.
 
-Les équipements de sécurité sont des systèmes de détection d'intrusion (ou IDS : Intrusion Detection System), des systèmes de prévention d'intrusion (ou IPS : Intrustion Prevention System), des systèmes de surveillance des équipements. 
+Les équipements de sécurité sont des systèmes de détection d'intrusion (ou IDS : Intrusion Detection System), des systèmes de prévention d'intrusion (ou IPS : Intrustion Prevention System), des systèmes de surveillance des équipements.
 
 Table *security_devices* :
 
@@ -616,11 +632,23 @@ Table *dnsservers* :
 | updated_at           | timestamp    | Date de mise à jour |
 | deleted_at           | timestamp    | Date de suppression |
 
+#### Clusters
+
+Les clusters représentent un ensemble de serveurs logiques hébergés sur un ou plusieurs serveurs physiques
+
+Table *clusters* :
+
+| Champ                | Type         | Description      |
+|:---------------------|:-------------|:-----------------|
+| id                   | int unsigned | auto_increment |
+| name                 | varchar(255) | Nom du serveur |
+| type                 | varchar(255) | Type de cluster |
+| description          | longtext     | Description du cluster |
+| address_ip           | varchar(255) | Adresses IP du cluster |
+
 #### Serveurs logiques
 
 Les serveurs logiques sont un découpage logique d’un serveur physique. Si le serveur physique n’est pas virtualisé, il est découpé en un seul serveur logique.
-
-Dans la cas de la virtualisation d’un groupe de serveurs physique aussi appelé « cluster », on peut associer tous les serveurs physiques du cluster au serveur logique.
 
 Table *logical_servers* :
 
@@ -671,7 +699,7 @@ Table *certificates* :
 
 ### L’infrastructure physique
 
-La vue des infrastructures physiques décrit les équipements physiques qui composent le système d’information ou qui sont utilisés par celui-ci. 
+La vue des infrastructures physiques décrit les équipements physiques qui composent le système d’information ou qui sont utilisés par celui-ci.
 
 [<img src="/mercator/images/physical.png" width="700">](/mercator/images/physical.png)
 
@@ -714,7 +742,7 @@ Table *buildings* :
 
 Les baies sont des armoires techniques rassemblant des équipements de réseau informatique ou de téléphonie.
 
-Table *bays* : 
+Table *bays* :
 
 | Champ                | Type         | Description      |
 |:---------------------|:-------------|:-----------------|
@@ -822,7 +850,7 @@ Les téléphones fixe ou portable appartenant à l’organisation.
 
 Les commutateurs physiques sont des composants physiques gérant les connexions entre les différents serveurs au sein d’un réseau.
 
-Table *physical_switches* : 
+Table *physical_switches* :
 
 | Champ                | Type         | Description      |
 |:---------------------|:-------------|:-----------------|
@@ -878,7 +906,7 @@ Les équipements de sécurité physique sont des composants permettant la superv
 
 Les équipements de sécurité physique sont des sondes de températures, des caméras, des portes sécurisées, ...
 
-Table *physical_security_devices* : 
+Table *physical_security_devices* :
 
 | Champ                | Type         | Description      |
 |:---------------------|:-------------|:-----------------|
@@ -951,4 +979,3 @@ Table *vlans* :
 | created_at           | timestamp    | Date de création |
 | updated_at           | timestamp    | Date de mise à jour |
 | deleted_at           | timestamp    | Date de suppression |
-

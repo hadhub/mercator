@@ -28,6 +28,7 @@ class DomaineAdController extends Controller
 
         $domaineAd = DomaineAd::create($request->all());
         $domaineAd->domainesForestAds()->sync($request->input('domainesForestAds', []));
+        $domaineAd->logicalServers()->sync($request->input('logicalServers', []));
 
         return response()->json($domaineAd, 201);
     }
@@ -45,6 +46,7 @@ class DomaineAdController extends Controller
 
         $domaineAd->update($request->all());
         $domaineAd->domainesForestAds()->sync($request->input('domainesForestAds', []));
+        $domaineAd->logicalServers()->sync($request->input('logicalServers', []));
 
         return response()->json();
     }

@@ -79,6 +79,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#access-rights">Access rights</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#linking-objects">Linking objects</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#php">PHP</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#authentification">Authentification</a>
@@ -156,21 +158,20 @@ The list of APIs can be found in /route/api.php</p>
 </ul>
 <p><em>Information system business view</em></p>
 <ul>
-<li>/api/macro-processes</li>
 <li>/api/macro-processuses</li>
 <li>/api/processes</li>
-<li>/api/operations</li>
-<li>/api/actors</li>
 <li>/api/activities</li>
+<li>/api/operations</li>
 <li>/api/tasks</li>
+<li>/api/actors</li>
 <li>/api/information</li>
 </ul>
 <p><em>Application view</em></p>
 <ul>
 <li>/api/application-blocks</li>
 <li>/api/applications</li>
-<li>/api/application-modules</li>
 <li>/api/application-services</li>
+<li>/api/application-modules</li>
 <li>/api/databases</li>
 <li>/api/fluxes</li>
 </ul>
@@ -180,6 +181,7 @@ The list of APIs can be found in /route/api.php</p>
 <li>/api/annuaires</li>
 <li>/api/forest-ads</li>
 <li>/api/domaine-ads</li>
+<li>/api/admin-users</li>
 </ul>
 <p><em>Logical infrastructure view</em></p>
 <ul>
@@ -192,8 +194,11 @@ The list of APIs can be found in /route/api.php</p>
 <li>/api/security-devices</li>
 <li>/api/dhcp-servers</li>
 <li>/api/dnsservers</li>
+<li>/api/clusters</li>
 <li>/api/logical-servers</li>
+<li>/api/logical-flows</li>
 <li>/api/certificates</li>
+<li>/api/vlans</li>
 </ul>
 <p><em>Physical infrastructure view</em></p>
 <ul>
@@ -212,13 +217,8 @@ The list of APIs can be found in /route/api.php</p>
 <li>/api/wans</li>
 <li>/api/mans</li>
 <li>/api/lans</li>
-<li>/api/vlans</li>
-</ul>
-<p><em>Administration</em></p>
-<ul>
-<li>/api/users</li>
-<li>/api/permissions</li>
-<li>/api/roles</li>
+<li>/api/links</li>
+<li>/api/fluxes</li>
 </ul>
 <h3 id="actions-managed-by-the-resource-controller">Actions managed by the resource controller</h3>
 <p>Requests and URIs for each api are shown in the table below.</p>
@@ -265,6 +265,32 @@ This user must have a role in Mercator that allows him/her to access/modify the 
 objects accessed via the API.</p>
 <p>When authentication is successful, the API sends an "access_token", which must be passed in the "Authorization" header.
 header of the API request.</p>
+<h3 id="linking-objects">Linking objects</h3>
+<p>Mapping objects can refer to other objects. For example, we can link a process to an application. Suppose we have a ‘process’ that uses two applications, ‘app1’ and ‘app2’. To do this, we follow these steps:</p>
+<ul>
+<li>Step 1: Ensure you have the application_id for the applications you want to link.</li>
+</ul>
+<pre><code>{
+  &quot;id&quot;: 201,
+  &quot;name&quot;: &quot;app1&quot;,
+  &quot;description&quot;: &quot;desc1&quot;
+}
+{
+  &quot;id&quot;: 202,
+  &quot;name&quot;: &quot;app2&quot;,
+  &quot;description&quot;: &quot;desc2&quot;
+}
+</code></pre>
+<ul>
+<li>Step 2: Link the process to the applications. Either with an update or a store, we can add:</li>
+</ul>
+<pre><code>{
+  &quot;id&quot;: 101,
+  &quot;name&quot;: &quot;process&quot;,
+  &quot;applications[]&quot;: [201, 202]
+}
+</code></pre>
+<p>The names of all extra fields are: ['actors', 'tasks', 'activities', 'entities', 'applications', 'informations', 'processes', 'databases', 'logical_servers', 'modules', 'domainesForestAds', 'servers', 'vlans', 'lans', 'mans', 'wans', 'operations', 'domaine_ads', 'application_services', 'certificates', 'peripherals', 'physical_servers', 'physical_routers', 'network_switches', 'routers', 'physicalSwitches', 'physicalRouters']</p>
 <h3 id="php">PHP</h3>
 <p>Here are a few examples of how to use the API with PHP:</p>
 <h5 id="authentification">Authentification</h5>

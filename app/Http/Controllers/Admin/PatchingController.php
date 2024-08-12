@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PatchingController extends Controller
 {
-
     public function index(Request $request)
     {
         abort_if(Gate::denies('patching_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -244,26 +243,30 @@ class PatchingController extends Controller
         // select distinct attributes
         $res = [];
         foreach ($patches as $p) {
-          foreach (explode(' ', $p->attributes) as $j) {
-              if (strlen(trim($j)) > 0) {
-                  $res[] = trim($j);
-              }
-          }
+            foreach (explode(' ', $p->attributes) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
         }
         sort($res);
         $active_attributes_list = array_unique($res);
 
-
-        return view('admin.patching.dashboard',
+        return view(
+            'admin.patching.dashboard',
             compact(
-                'patches', 'attributes_list',
-                'attributes_filter', 'active_attributes_list'));
+                'patches',
+                'attributes_list',
+                'attributes_filter',
+                'active_attributes_list'
+            )
+        );
     }
     private function getAttributes(): array
     {
         // Get Attributes
         $attributes_list = LogicalServer::select('attributes')
-            ->where('attributes', '<>', null)
+            ->whereNotNull('attributes')
             ->distinct()
             ->pluck('attributes');
         $res = [];
@@ -275,7 +278,7 @@ class PatchingController extends Controller
             }
         }
         $attributes_list = MApplication::select('attributes')
-            ->where('attributes', '<>', null)
+            ->whereNotNull('attributes')
             ->distinct()
             ->pluck('attributes');
         foreach ($attributes_list as $i) {

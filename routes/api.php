@@ -41,6 +41,7 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('annuaires', API\AnnuaireController::class);
     Route::resource('forest-ads', API\ForestAdController::class);
     Route::resource('domaine-ads', API\DomaineAdController::class);
+    Route::resource('admin-users', API\AdminUserController::class);
 
     Route::resource('networks', API\NetworkController::class);
     Route::resource('subnetworks', API\SubnetworkController::class);
@@ -51,7 +52,9 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('security-devices', API\SecurityDeviceController::class);
     Route::resource('dhcp-servers', API\DhcpServerController::class);
     Route::resource('dnsservers', API\DnsserverController::class);
+    Route::resource('clusters', API\ClusterController::class);
     Route::resource('logical-servers', API\LogicalServerController::class);
+    Route::resource('logical-flows', API\LogicalFlowController::class);
     Route::resource('certificates', API\CertificateController::class);
 
     Route::resource('sites', API\SiteController::class);
@@ -70,6 +73,7 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('mans', API\ManController::class);
     Route::resource('lans', API\LanController::class);
     Route::resource('vlans', API\VlanController::class);
+    Route::resource('links', API\PhysicalLinkController::class);
 
     Route::resource('users', API\UserController::class);
     Route::resource('permission', API\PermissionController::class);

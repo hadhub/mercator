@@ -21,6 +21,9 @@ class Relation extends Model
         'name',
         'type',
         'description',
+        'order_number',
+        'reference',
+        'comments',
     ];
 
     protected $dates = [
@@ -50,7 +53,6 @@ class Relation extends Model
         'deleted_at',
     ];
 
-
     public function getStartDateAttribute($value)
     {
         return $value ? Carbon::parse($value)->format(config('panel.date_format')) : null;
@@ -70,7 +72,6 @@ class Relation extends Model
     {
         $this->attributes['end_date'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
     }
-
 
     public function source()
     {
